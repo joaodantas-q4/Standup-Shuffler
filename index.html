@@ -1,0 +1,202 @@
+<!-- <button onclick="shuffler1()">IM/IC List</button>
+<button onclick="shuffler2()"> list</button> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./styles.css">
+  <title>Document</title>
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <img src="./assets/img/q4logo.webp" alt="Q4">
+      <nav>
+        <button id="restart" style="display: none;" onclick="restart()">Restart</button>
+      </nav>
+    </div>
+    
+  </header>
+
+
+  <div id="speakerBox">
+    <h3 id="info">Press the button to start</h3>
+    <h3 id="type"></h3>
+    <h1 id="speaker"></h1>
+    <h3 id="finished" style="display: none;">Finished</h3>
+    
+  </div>
+  
+  <div class="buttons">
+
+    <button id="start" onclick="main()">Start</button>
+    <button id="previous" onclick="previousSpeaker()">Previous Speaker</button>
+    <button id="next" onclick="nextSpeaker()">Next Speaker</button>
+
+  </div>
+  
+
+  <script>
+    function refreshDisplayedSpeaker() {
+      document.querySelector('#type').innerHTML = currentSpeaker.type;
+      document.querySelector('#speaker').innerHTML = speakers[currentSpeaker.type][currentSpeaker.index];
+    }
+  
+    function hideElements(array) {
+      array.forEach(item => {
+        const element =  document.querySelector(item);
+        if (element.style.display !== "none")
+          element.style.display = "none"
+      })
+    }
+  
+    function showElements(array) {
+      array.forEach(item => {
+        const element =  document.querySelector(item);
+        if (element.style.display !== "flex")
+          element.style.display = "flex"
+      })
+    }
+  
+    hideElements(['#previous', '#next']);
+  
+    const types = {
+      IM_IC: "IM/IC",
+      Dev_Content_QA: "Dev/Content/QA",
+    }
+  
+    const typesAlreadySpoke = [];
+  
+    const speakers = {
+      [types.IM_IC]: ['Julia Joachimowicz', 'Emma Mallon', 'Jen Grajkowski', 'Jennifer Guo', 'Luis Díaz', 'Julianna Hindemith', 'Eduardo Arrangóiz'],
+      [types.Dev_Content_QA]: ['Abner Rojas', 'Augusto Pavía Rosas', 'Cesar Villegas', 'Michael Li', 'Jéssica Motta', 'Kathryn Robertson',  'Marcos Herrera', 'Shaun Seeram',  'Enrique Lozano', 'Filip Swierczynski', 'João Dantas', 'Robert Ling']
+    }
+  
+    let currentSpeaker = {type: types.IM_IC, index: 0}
+  
+    function getRandomInt(min, max) {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+  
+    function shuffleAllSpeakers() {
+      Object.keys(speakers).forEach(function(key) {
+        speakers[key] = shuffle([...speakers[key]]);
+      });
+    }
+
+    function restart() {
+      hideElements(['#restart', '#previous', '#next', '#finished'])
+      showElements(['#start','#info']);
+      document.querySelector('#type').innerHTML = '';
+      document.querySelector('#speaker').innerHTML = '';
+      currentSpeaker = {type: types.IM_IC, index: 0}
+    }
+  
+    function finish() {
+      hideElements(['#previous', '#next','#start','#info']);
+      showElements(['#restart']);
+      document.querySelector('#type').innerHTML = '';
+      document.querySelector('#speaker').innerHTML = '';
+    }
+  
+    function main() {
+      shuffleAllSpeakers();
+      refreshDisplayedSpeaker();
+      hideElements(['#start','#info'])
+      showElements(['#next', '#restart']);
+    }
+  
+    function shuffle(array) {
+      const totalNamesNumber = array.length;
+      const newArray = [];
+      for (let index = 0; index < totalNamesNumber; index++) {
+        const random = getRandomInt(0, array.length - 1);
+        newArray.push(array[random]);
+        array.splice(random, 1)
+      }
+      return newArray;
+    }
+
+    function previousSpeaker() {
+      if (currentSpeaker.type === types.IM_IC && currentSpeaker.index === 1) {
+        hideElements(['#previous']);
+        currentSpeaker = {
+          ...currentSpeaker,
+          index: currentSpeaker.index - 1
+        }
+        refreshDisplayedSpeaker();
+        return;
+      }
+
+      if(currentSpeaker.type === types.Dev_Content_QA) {
+        if(currentSpeaker.index < speakers[currentSpeaker.type].length)
+          showElements(['#next'])
+
+        if (currentSpeaker.index === 0) {
+          currentSpeaker = {
+          type: types.IM_IC,
+          index: speakers[types.IM_IC].length - 1
+        }
+          refreshDisplayedSpeaker();
+          return;
+        }
+        
+      }
+
+      currentSpeaker = {
+          ...currentSpeaker,
+          index: currentSpeaker.index - 1
+        }
+
+      refreshDisplayedSpeaker();
+      return;
+    }
+  
+    function nextSpeaker() {
+      if (currentSpeaker.index + 1 < speakers[currentSpeaker.type].length) {    
+        if (currentSpeaker.index === speakers[types.Dev_Content_QA].length - 2)
+          hideElements(['#next']);
+
+        currentSpeaker = {
+          ...currentSpeaker,
+          index: currentSpeaker.index + 1
+        }
+        refreshDisplayedSpeaker();
+        showElements(['#previous']);
+        return;
+      }
+  
+      const inArray = typesAlreadySpoke.includes(currentSpeaker.type);
+  
+      if(!inArray) {
+        typesAlreadySpoke.push(currentSpeaker.type);
+      }
+  
+      const nextType = Object.keys(speakers).filter(item => !typesAlreadySpoke.includes(item))[0];
+  
+      if(nextType) {
+          currentSpeaker = {
+          type: nextType,
+          index: 0
+        }
+        refreshDisplayedSpeaker();
+        return;
+      }
+
+      
+    }
+  </script>
+</body>
+
+</html>
+
+
+
